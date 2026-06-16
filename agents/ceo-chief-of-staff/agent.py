@@ -5,6 +5,7 @@ Pulls from: Google Sheets (KPIs, products, customers, hiring) + Google Docs (str
 
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -23,6 +24,16 @@ Rules:
 - End with 3-5 prioritized recommended actions for today
 - Keep the entire brief under 600 words
 - Use markdown formatting with headers and bullet points"""
+
+CHAT_SYSTEM_PROMPT = """You are Algae Bud, the AI assistant for AlgaeCal's CEO. You answer questions ONLY using the company data provided below. Do NOT use outside knowledge or make up data.
+
+If the answer is not in the provided data, say: "I don't have that information in the current data sources. Try asking about revenue, products, customer health, hiring, or the CEO weekly update."
+
+Be concise, use specific numbers, and cite the data source for each answer.
+
+--- COMPANY DATA ---
+{context}
+--- END DATA ---"""
 
 
 def pull_revenue_kpis() -> str:
@@ -116,22 +127,34 @@ def pull_strategy_doc() -> str:
 
 
 def build_context() -> str:
-    sections = {
-        "Revenue & KPIs": pull_revenue_kpis(),
-        "Product Performance": pull_product_performance(),
-        "Customer Risks": pull_customer_health(),
-        "Hiring Pipeline (At Risk)": pull_hiring_pipeline(),
-        "CEO Weekly Update (Strategy Doc)": pull_strategy_doc(),
+    """Pull all data sources in parallel and assemble context."""
+    fetchers = {
+        "Revenue & KPIs": pull_revenue_kpis,
+        "Product Performance": pull_product_performance,
+        "Customer Risks": pull_customer_health,
+        "Hiring Pipeline (At Risk)": pull_hiring_pipeline,
+        "CEO Weekly Update (Strategy Doc)": pull_strategy_doc,
     }
 
+    results = {}
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = {title: executor.submit(fn) for title, fn in fetchers.items()}
+        for title, future in futures.items():
+            try:
+                results[title] = future.result(timeout=15)
+            except Exception as e:
+                results[title] = f"Error fetching data: {e}"
+
     context = f"**Date:** {date.today().isoformat()}\n\n"
-    for title, content in sections.items():
+    for title, content in results.items():
         context += f"### {title}\n{content}\n\n"
     return context
 
 
-def generate_brief() -> str:
-    context = build_context()
+def generate_brief(context: str = None) -> str:
+    """Generate the daily brief. Accepts pre-built context to avoid re-fetching."""
+    if context is None:
+        context = build_context()
     prompt = (
         "Based on the following live company data pulled from Google Sheets and Google Docs, "
         "generate today's CEO Daily Brief.\n\n"
@@ -139,3 +162,17 @@ def generate_brief() -> str:
         "Produce the brief now."
     )
     return call_llm(prompt=prompt, system=SYSTEM_PROMPT)
+
+
+def chat_with_context(user_message: str, context: str, chat_history: list = None) -> str:
+    """Answer a user question using only the company data context."""
+    system = CHAT_SYSTEM_PROMPT.format(context=context)
+
+    messages_text = ""
+    if chat_history:
+        for msg in chat_history:
+            role = "CEO" if msg["role"] == "user" else "Algae Bud"
+            messages_text += f"{role}: {msg['content']}\n"
+
+    prompt = f"{messages_text}CEO: {user_message}\nAlgae Bud:"
+    return call_llm(prompt=prompt, system=system)

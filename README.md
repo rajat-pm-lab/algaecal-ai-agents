@@ -18,7 +18,7 @@ These 6 agents solve real problems with real integrations. Not toy demos.
 
 | # | Agent | What It Does | Business Impact |
 |---|-------|-------------|-----------------|
-| 1 | **CEO Chief of Staff** | Daily briefing: KPIs, risks, delayed initiatives, customer escalations | Saves CEO 1-2 hrs/day |
+| 1 | **CEO Chief of Staff** | Daily briefing + "Ask Your Algae Bud" chat: KPIs, risks, hiring, customer escalations | Saves CEO 1-2 hrs/day |
 | 2 | **Product Manager Copilot** | Root-cause analysis, PRD generation, experiment design | 3x faster feature investigation |
 | 3 | **Customer Success** | Account health scoring, churn prediction, renewal playbooks | Reduces churn |
 | 4 | **Revenue Intelligence** | Pipeline analysis, win-loss, deal coaching, forecast | Improves forecast accuracy |
@@ -62,6 +62,13 @@ algaecal-ai-agents/
 ├── docs/                       # Architecture diagrams
 └── requirements.txt
 ```
+
+## Live Demo
+
+**CEO Chief of Staff Agent** is deployed on Streamlit Cloud with:
+- Auto-generated daily brief on page load (parallel data fetching for speed)
+- **Ask Your Algae Bud** — conversational AI assistant scoped strictly to company data
+- Connected to Google Sheets (KPI Dashboard) + Google Docs (CEO Weekly Update)
 
 ## Architecture
 

@@ -18,9 +18,9 @@ if _agent_dir not in sys.path:
 
 st.set_page_config(page_title="CEO Daily Brief — AlgaeCal", page_icon="📊", layout="wide")
 
-# Import agent after path setup — show errors in UI if it fails
+# Import agent after path setup
 try:
-    from agent import build_context, generate_brief
+    from agent import build_context, generate_brief, chat_with_context
     _import_error = None
 except Exception as e:
     _import_error = e
@@ -48,23 +48,67 @@ with st.sidebar:
     st.divider()
     st.markdown("**Agent:** CEO Chief of Staff")
     st.markdown("**LLM:** Model-agnostic (Gemini / Claude)")
+    st.divider()
+    if st.button("🔄 Refresh Brief", use_container_width=True):
+        for key in ["context", "brief"]:
+            st.session_state.pop(key, None)
+        st.rerun()
 
-# Generate brief
-if st.button("🔄 Generate Today's Brief", type="primary", use_container_width=True):
+# --- Auto-generate brief on page load ---
+if "context" not in st.session_state:
     with st.spinner("Pulling live data from Google Sheets & Docs..."):
         try:
-            brief = generate_brief()
-            st.session_state["brief"] = brief
             st.session_state["context"] = build_context()
         except Exception as e:
+            st.error(f"Error fetching data: {e}")
+            st.stop()
+
+if "brief" not in st.session_state:
+    with st.spinner("Generating today's brief..."):
+        try:
+            st.session_state["brief"] = generate_brief(context=st.session_state["context"])
+        except Exception as e:
             st.error(f"Error generating brief: {e}")
+            st.stop()
 
 # Display brief
-if "brief" in st.session_state:
-    st.markdown(st.session_state["brief"])
+st.markdown(st.session_state["brief"])
 
-    if show_raw and "context" in st.session_state:
-        with st.expander("📋 Raw Data Context (sent to LLM)", expanded=False):
-            st.markdown(st.session_state["context"])
-else:
-    st.info("Click **Generate Today's Brief** to pull live data from Google Sheets and Docs.")
+if show_raw:
+    with st.expander("📋 Raw Data Context (sent to LLM)", expanded=False):
+        st.markdown(st.session_state["context"])
+
+# --- Ask Your Algae Bud ---
+st.divider()
+st.subheader("🌿 Ask Your Algae Bud")
+st.caption("Ask follow-up questions about your company data. Answers are based strictly on the connected data sources.")
+
+# Initialize chat history
+if "chat_messages" not in st.session_state:
+    st.session_state["chat_messages"] = []
+
+# Display chat history
+for msg in st.session_state["chat_messages"]:
+    with st.chat_message(msg["role"], avatar="🧑‍💼" if msg["role"] == "user" else "🌿"):
+        st.markdown(msg["content"])
+
+# Chat input
+if user_input := st.chat_input("Ask about revenue, products, hiring, customers..."):
+    # Show user message
+    st.session_state["chat_messages"].append({"role": "user", "content": user_input})
+    with st.chat_message("user", avatar="🧑‍💼"):
+        st.markdown(user_input)
+
+    # Generate response
+    with st.chat_message("assistant", avatar="🌿"):
+        with st.spinner("Thinking..."):
+            try:
+                response = chat_with_context(
+                    user_message=user_input,
+                    context=st.session_state["context"],
+                    chat_history=st.session_state["chat_messages"][:-1],
+                )
+                st.markdown(response)
+                st.session_state["chat_messages"].append({"role": "assistant", "content": response})
+            except Exception as e:
+                st.error(f"Error: {e}")
