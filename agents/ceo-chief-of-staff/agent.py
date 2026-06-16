@@ -139,7 +139,3 @@ def generate_brief() -> str:
         "Produce the brief now."
     )
     return call_llm(prompt=prompt, system=SYSTEM_PROMPT)
-
-
-if __name__ == "__main__":
-    print(generate_brief())
