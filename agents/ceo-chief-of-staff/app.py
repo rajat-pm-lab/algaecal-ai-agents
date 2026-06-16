@@ -5,21 +5,33 @@ Run locally: streamlit run agents/ceo-chief-of-staff/app.py
 
 import sys
 import os
+import streamlit as st
+from datetime import date
 
 # Add repo root and agent directory to path
 _agent_dir = os.path.dirname(os.path.abspath(__file__))
-_repo_root = os.path.join(_agent_dir, "..", "..")
-sys.path.insert(0, os.path.abspath(_repo_root))
-sys.path.insert(0, _agent_dir)
-
-import streamlit as st
-from datetime import date
-from agent import build_context, generate_brief
+_repo_root = os.path.abspath(os.path.join(_agent_dir, "..", ".."))
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
+if _agent_dir not in sys.path:
+    sys.path.insert(0, _agent_dir)
 
 st.set_page_config(page_title="CEO Daily Brief — AlgaeCal", page_icon="📊", layout="wide")
 
+# Import agent after path setup — show errors in UI if it fails
+try:
+    from agent import build_context, generate_brief
+    _import_error = None
+except Exception as e:
+    _import_error = e
+
 st.title("📊 CEO Daily Brief")
 st.caption(f"AlgaeCal AI Chief of Staff · {date.today().strftime('%A, %B %d, %Y')}")
+
+if _import_error:
+    st.error(f"Agent failed to load: {_import_error}")
+    st.code(f"sys.path: {sys.path}\n\nRepo root: {_repo_root}\nAgent dir: {_agent_dir}")
+    st.stop()
 
 st.divider()
 
