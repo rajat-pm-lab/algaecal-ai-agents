@@ -27,3 +27,7 @@ Thumbs.db
 # Data
 *.db
 *.sqlite
+
+# Google credentials
+*.json
+!package.json

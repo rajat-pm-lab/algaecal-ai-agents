@@ -3,16 +3,13 @@ Model-agnostic LLM provider. Supports Gemini (default) and Anthropic (optional).
 Swap providers by setting LLM_PROVIDER in .env.
 """
 
-import os
 import json
 import urllib.request
-from dotenv import load_dotenv
-
-load_dotenv()
+from shared.config import get_secret
 
 
 def get_provider():
-    return os.getenv("LLM_PROVIDER", "gemini")
+    return get_secret("LLM_PROVIDER", "gemini")
 
 
 def call_llm(prompt: str, system: str = "", model: str = None) -> str:
@@ -26,9 +23,7 @@ def call_llm(prompt: str, system: str = "", model: str = None) -> str:
 
 
 def _call_gemini(prompt: str, system: str = "", model: str = None) -> str:
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY not set in .env")
+    api_key = get_secret("GEMINI_API_KEY")
 
     model = model or "gemini-2.5-flash"
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
@@ -54,9 +49,7 @@ def _call_gemini(prompt: str, system: str = "", model: str = None) -> str:
 
 
 def _call_anthropic(prompt: str, system: str = "", model: str = None) -> str:
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
-        raise ValueError("ANTHROPIC_API_KEY not set in .env")
+    api_key = get_secret("ANTHROPIC_API_KEY")
 
     model = model or "claude-sonnet-4-20250514"
     url = "https://api.anthropic.com/v1/messages"

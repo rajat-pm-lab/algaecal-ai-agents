@@ -1,12 +1,16 @@
 """
 Streamlit UI for CEO Chief of Staff Agent.
-Run: streamlit run agents/ceo-chief-of-staff/app.py
+Run locally: streamlit run agents/ceo-chief-of-staff/app.py
 """
 
 import sys
 import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+# Add repo root and agent directory to path
+_agent_dir = os.path.dirname(os.path.abspath(__file__))
+_repo_root = os.path.join(_agent_dir, "..", "..")
+sys.path.insert(0, os.path.abspath(_repo_root))
+sys.path.insert(0, _agent_dir)
 
 import streamlit as st
 from datetime import date
@@ -19,18 +23,23 @@ st.caption(f"AlgaeCal AI Chief of Staff · {date.today().strftime('%A, %B %d, %Y
 
 st.divider()
 
-# Sidebar with raw data toggle
+# Sidebar
 with st.sidebar:
-    st.header("Controls")
+    st.header("Live Data Sources")
+    st.success("Google Sheets — KPI Dashboard", icon="✅")
+    st.success("Google Docs — CEO Weekly Update", icon="✅")
+    st.info("Slack — Coming Soon", icon="⏳")
+    st.info("HubSpot CRM — Coming Soon", icon="⏳")
+    st.info("Notion — Coming Soon", icon="⏳")
+    st.divider()
     show_raw = st.checkbox("Show raw data context", value=False)
     st.divider()
     st.markdown("**Agent:** CEO Chief of Staff")
-    st.markdown("**Data sources:** Revenue KPIs, Customers, Escalations, Engineering, Hiring, Slack")
     st.markdown("**LLM:** Model-agnostic (Gemini / Claude)")
 
 # Generate brief
 if st.button("🔄 Generate Today's Brief", type="primary", use_container_width=True):
-    with st.spinner("Pulling company data and generating brief..."):
+    with st.spinner("Pulling live data from Google Sheets & Docs..."):
         try:
             brief = generate_brief()
             st.session_state["brief"] = brief
@@ -46,4 +55,4 @@ if "brief" in st.session_state:
         with st.expander("📋 Raw Data Context (sent to LLM)", expanded=False):
             st.markdown(st.session_state["context"])
 else:
-    st.info("Click **Generate Today's Brief** to pull the latest company data and produce the CEO daily brief.")
+    st.info("Click **Generate Today's Brief** to pull live data from Google Sheets and Docs.")

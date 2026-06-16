@@ -1,0 +1,126 @@
+ALGAECAL — CEO WEEKLY UPDATE
+Week of June 15, 2026
+Prepared for: Dean Neuls, CEO
+Last updated: June 15, 2026
+
+======================================
+EXECUTIVE SUMMARY
+======================================
+
+Revenue is tracking 4% above Q2 forecast driven by strong DTC subscription growth. Two critical enterprise account situations require immediate CEO attention (Costco Canada, Amazon Marketplace). Engineering has two P0 launches at risk. Backend engineering hiring pipeline is critically low.
+
+======================================
+REVENUE & FINANCIAL HEALTH
+======================================
+
+Q2 2026 Revenue (through June 15):
+- Actual: $9.2M | Target: $8.85M | Variance: +4.0%
+- DTC channel: +8% vs forecast (subscription upgrades driving growth)
+- Amazon channel: flat (listing suspension impacting last 48 hours)
+- Retail channel: +2% vs forecast
+
+Monthly Recurring Revenue (MRR): $3.42M
+- Active subscribers: 28,975 (+3.2% MoM)
+- Net subscriber adds (June): +525
+- Subscription churn: 2.1% (down from 2.4% in May — win)
+
+Cash position: $12.4M (runway: 18+ months)
+Gross margin: 72.3% (stable)
+
+Key concern: If Amazon listing suspension continues beyond 5 days, we risk ~$150K in lost revenue for June.
+
+======================================
+STRATEGIC INITIATIVES STATUS
+======================================
+
+[P0] SUBSCRIPTION PLATFORM V2 — DELAYED
+Owner: Sarah Chen, VP Engineering
+Target: June 30, 2026 | Progress: 62%
+Status: Payment provider API migration blocked on legal review of new Stripe contract terms. Legal team expects to close review by Wednesday June 18. If cleared, engineering estimates 10 days to complete integration. Realistic new target: July 10.
+CEO Action Needed: Ping legal to prioritize — this is our #1 revenue growth lever for H2.
+
+[P0] MOBILE APP REWRITE (REACT NATIVE) — DELAYED
+Owner: Marcus Johnson, Engineering Lead
+Target: July 15, 2026 | Progress: 45%
+Status: iOS push notification system failing in TestFlight. Root cause identified (APNs certificate configuration). Fix in progress, expected resolution by June 17. Android build on track. Overall timeline at risk — may slip to July 30.
+CEO Action Needed: None — monitoring.
+
+[P0] WAREHOUSE AUTOMATION PHASE 2 — AT RISK
+Owner: Lisa Wang, VP Operations
+Target: June 25, 2026 | Progress: 80%
+Status: Conveyor system vendor (Dematic) confirmed revised delivery date of June 28 — 2 weeks late. This delays full automation go-live to ~July 5. Fulfillment team has manual workaround in place but capacity is constrained during peak summer ordering.
+CEO Action Needed: Decision on whether to activate temporary staffing ($18K/week) to cover the gap.
+
+[P1] AI-POWERED PRODUCT RECOMMENDATIONS — ON TRACK
+Owner: Priya Patel, Data Science Lead
+Target: August 1, 2026 | Progress: 35%
+Status: ML model training on 3 years of purchase data. Initial A/B test showing +12% cross-sell click-through. Deployment infrastructure being built on AWS SageMaker. On track.
+
+[P1] CUSTOMER PORTAL REDESIGN — ON TRACK
+Owner: David Kim, Head of Design
+Target: July 30, 2026 | Progress: 70%
+Status: Beta launched to 500 subscribers. NPS from beta group: 72 (strong). Key feedback: users want easier subscription modification and order history search. Engineering sprint for these features starts June 16.
+
+[P2] INTERNATIONAL SHIPPING EXPANSION (UK + EU) — ON TRACK
+Owner: James Taylor, Biz Dev
+Target: September 15, 2026 | Progress: 20%
+Status: Regulatory submissions filed in UK and Germany. Logistics partner (DHL eCommerce) contract signed. Pricing model finalized at 15% premium to NA pricing. Marketing collateral in progress.
+
+======================================
+CUSTOMER & PARTNER RISKS
+======================================
+
+CRITICAL — COSTCO CANADA ($580K ARR, renews July 1)
+Situation: Shipment of 10,000 units delayed due to warehouse capacity constraints (related to Automation Phase 2 delays). Costco's category manager is threatening formal contract review. Their account manager (Rachel Simmons) is requesting an emergency call with Dean by EOD Tuesday June 17.
+Impact: $580K ARR at risk + potential loss of retail credibility signal.
+Recommendation: Take the call. Have Lisa Wang provide a firm delivery date before the call. Consider expediting partial shipment (5,000 units) via express freight ($8K premium).
+
+CRITICAL — AMAZON MARKETPLACE ($450K ARR)
+Situation: Product listing for Bone Builder Pack suspended June 14 due to Health Canada labeling compliance flag. Amazon requires updated Certificate of Analysis and label revision. VP Regulatory (Maria Santos) is leading response.
+Impact: Every day of suspension = ~$15K lost revenue + search ranking degradation.
+Recommendation: Escalate internally — target listing reinstatement by June 18.
+
+HIGH — VITACOST DISTRIBUTION ($210K ARR, renews July 15)
+Situation: Unresolved $45K invoice discrepancy from Q1. Their AP team is blocking renewal discussion until resolved. CFO (Robert Park) engaged as of June 11.
+Recommendation: CFO to resolve by June 20 — then schedule renewal call immediately.
+
+WATCH — SHOPPERS DRUG MART ($155K ARR)
+Situation: Requesting exclusive Canadian formulation (different label, possibly different dosage). VP Product evaluating feasibility. If we do this, it sets precedent for other retail partners requesting exclusives.
+Recommendation: CEO decision needed — do we open the door to retailer-exclusive SKUs?
+
+======================================
+PEOPLE & CULTURE
+======================================
+
+Headcount: 135 (target: 142 by July 31)
+Open roles: 7 | Behind plan: 4 (all technical)
+
+Critical hiring gaps:
+- 2x Senior Backend Engineers (45 and 38 days open, only 3 candidates total in pipeline)
+- 1x ML Engineer (52 days open — market is extremely competitive)
+- 1x DevOps Engineer (35 days open)
+
+HR recommends engaging external recruiter agency (estimated cost: $45-60K in placement fees for the 4 roles). Without this, realistic time-to-fill is 60-90 more days — directly impacting Subscription Platform and Mobile App timelines.
+
+Employee NPS (May pulse): 71 (up from 67 in April)
+Voluntary turnover (trailing 12mo): 8.2% (healthy)
+
+======================================
+LOOKING AHEAD — WEEK OF JUNE 16
+======================================
+
+Must-do this week:
+1. CEO call with Costco Canada AM — Tuesday EOD
+2. Amazon listing reinstatement — target Wednesday
+3. Legal review of Stripe contract — push for Wednesday close
+4. Decide on recruiter agency engagement for engineering roles
+5. Decide on Shoppers Drug Mart exclusive formulation request
+
+Board meeting prep (July 10):
+- Q2 financial close: July 5
+- Board deck first draft: July 7
+- Pre-read distribution: July 8
+
+======================================
+END OF WEEKLY UPDATE
+======================================

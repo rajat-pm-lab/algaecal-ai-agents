@@ -1,0 +1,8 @@
+Role,Department,Hiring Manager,Status,Days Open,Candidates in Pipeline,Stage of Top Candidate,Priority
+Senior Backend Engineer,Engineering,Sarah Chen,Behind Plan,45,2,Phone Screen,P0
+Senior Backend Engineer,Engineering,Sarah Chen,Behind Plan,38,1,Take-Home,P0
+ML Engineer,Data Science,Priya Patel,Behind Plan,52,3,On-Site (1 of 3),P0
+DevOps Engineer,Engineering,Marcus Johnson,At Risk,35,2,Phone Screen,P1
+Product Designer,Design,David Kim,On Track,20,5,Portfolio Review,P1
+Customer Success Manager,Customer Success,Rachel Green,On Track,15,4,Final Interview,P2
+Marketing Analyst,Marketing,Tom Wilson,On Track,10,6,Resume Screen,P2
