@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from shared.llm.provider import call_llm
 from shared.connectors.google_sheets import read_sheet
 from shared.connectors.google_docs import read_doc
+from shared.connectors.slack_reader import read_channel_messages, get_channel_name
 
 SYSTEM_PROMPT = """You are the AI Chief of Staff for AlgaeCal, a ~100-person DTC health supplements company in Vancouver.
 Your job is to produce a concise, actionable daily brief for the CEO.
@@ -19,8 +20,9 @@ Your job is to produce a concise, actionable daily brief for the CEO.
 Rules:
 - Lead with the most critical items requiring CEO attention
 - Use concrete numbers, not vague language
-- Cite the data source for each insight (e.g. "per Google Sheets — Customer Health", "per CEO Weekly Update doc")
+- Cite the data source for each insight (e.g. "per Google Sheets — Customer Health", "per CEO Weekly Update doc", "per Slack — #channel-name")
 - Highlight risks in plain language with dollar impact where possible
+- Include relevant Slack updates and team chatter that the CEO should be aware of
 - End with 3-5 prioritized recommended actions for today
 - Keep the entire brief under 600 words
 - Use markdown formatting with headers and bullet points"""
@@ -126,6 +128,27 @@ def pull_strategy_doc() -> str:
     return f"{text.strip()}\n\n*Source: Google Docs — CEO Weekly Update*"
 
 
+def pull_slack_updates() -> str:
+    """Pull recent Slack messages from the configured channel."""
+    try:
+        messages = read_channel_messages(limit=15)
+        if not messages:
+            return "No recent Slack messages."
+
+        try:
+            channel_name = get_channel_name()
+        except Exception:
+            channel_name = "connected-channel"
+
+        lines = []
+        for msg in reversed(messages):  # chronological order
+            lines.append(f"- {msg['text']}")
+        lines.append(f"\n*Source: Slack — #{channel_name}*")
+        return "\n".join(lines)
+    except Exception as e:
+        return f"Slack not connected: {e}"
+
+
 def build_context() -> str:
     """Pull all data sources in parallel and assemble context."""
     fetchers = {
@@ -134,6 +157,7 @@ def build_context() -> str:
         "Customer Risks": pull_customer_health,
         "Hiring Pipeline (At Risk)": pull_hiring_pipeline,
         "CEO Weekly Update (Strategy Doc)": pull_strategy_doc,
+        "Slack Team Updates": pull_slack_updates,
     }
 
     results = {}
