@@ -25,6 +25,16 @@ try:
 except Exception as e:
     _import_error = e
 
+# Check Slack availability
+_slack_connected = False
+try:
+    from shared.config import get_secret
+    get_secret("SLACK_BOT_TOKEN")
+    get_secret("SLACK_CHANNEL_ID")
+    _slack_connected = True
+except Exception:
+    pass
+
 st.title("📊 CEO Daily Brief")
 st.caption(f"AlgaeCal AI Chief of Staff · {date.today().strftime('%A, %B %d, %Y')}")
 
@@ -33,16 +43,27 @@ if _import_error:
     st.code(f"sys.path: {sys.path}\n\nRepo root: {_repo_root}\nAgent dir: {_agent_dir}")
     st.stop()
 
+# --- Demo Notice ---
+st.info(
+    "**Demo Mode** — This agent is built with dummy AlgaeCal data for quick demo and feedback. "
+    "Production deployment would connect to real data sources via MCP connectors.",
+    icon="💡"
+)
+
 # Sidebar
 with st.sidebar:
     st.header("Live Data Sources")
     st.success("Google Sheets — KPI Dashboard", icon="✅")
     st.success("Google Docs — CEO Weekly Update", icon="✅")
-    st.info("Slack — Coming Soon", icon="⏳")
+    if _slack_connected:
+        st.success("Slack — Team Updates", icon="✅")
+    else:
+        st.info("Slack — Not configured", icon="⏳")
     st.info("HubSpot CRM — Coming Soon", icon="⏳")
     st.info("Notion — Coming Soon", icon="⏳")
     st.divider()
     show_raw = st.checkbox("Show raw data context", value=False)
+    show_architecture = st.checkbox("Show agent architecture", value=False)
     st.divider()
     st.markdown("**Agent:** CEO Chief of Staff")
     st.markdown("**LLM:** Model-agnostic (Gemini / Claude)")
@@ -54,9 +75,83 @@ with st.sidebar:
 
 st.divider()
 
+# --- Agent Architecture Section ---
+if show_architecture:
+    st.markdown("## 🏗️ Agent Architecture")
+    st.markdown(
+        "This is not a simple chatbot or wrapper around an LLM. "
+        "It is an **autonomous AI agent** that orchestrates multiple data sources, "
+        "reasons across them, and produces actionable executive intelligence."
+    )
+
+    arch_cols = st.columns(4)
+    with arch_cols[0]:
+        st.markdown("#### 🔗 Multi-Source Orchestration")
+        st.markdown(
+            "Pulls live data from **6+ business systems** in parallel — "
+            "Google Sheets (4 tabs), Google Docs, and Slack. "
+            "Production-ready for Salesforce, Jira, HubSpot via MCP connectors."
+        )
+    with arch_cols[1]:
+        st.markdown("#### 🧠 Reasoning Layer")
+        st.markdown(
+            "Doesn't just summarize — **cross-references** revenue trends against "
+            "customer health, hiring gaps against engineering velocity, and Slack chatter "
+            "against strategic priorities to surface what actually matters."
+        )
+    with arch_cols[2]:
+        st.markdown("#### 🔄 Agentic Loop")
+        st.markdown(
+            "Executes a full **Gather → Analyze → Synthesize → Recommend** loop autonomously. "
+            "Each run pulls fresh data, identifies risks, and generates prioritized actions "
+            "without human prompting."
+        )
+    with arch_cols[3]:
+        st.markdown("#### ⚙️ Production Architecture")
+        st.markdown(
+            "**Model-agnostic** LLM provider (swap Gemini ↔ Claude in one line). "
+            "Concurrent data fetching via ThreadPoolExecutor. "
+            "Structured outputs with source attribution."
+        )
+
+    # Technical details expander
+    with st.expander("🔍 Technical Details", expanded=False):
+        tech_col1, tech_col2 = st.columns(2)
+        with tech_col1:
+            st.markdown("**Data Pipeline**")
+            st.markdown(
+                "- Google Sheets API → 4 tabs (Revenue, Products, Customers, Hiring)\n"
+                "- Google Docs API → CEO Weekly Strategy Update\n"
+                "- Slack API → Team channel messages (real-time)\n"
+                "- All fetched concurrently via `ThreadPoolExecutor`\n"
+                "- Graceful degradation — if one source fails, others still work"
+            )
+        with tech_col2:
+            st.markdown("**Agent Capabilities**")
+            st.markdown(
+                "- **Multi-step reasoning**: Breaks CEO brief into subtasks per data domain\n"
+                "- **Tool use**: Calls Google, Slack APIs to gather live data\n"
+                "- **Autonomous decision-making**: Identifies risks, prioritizes actions\n"
+                "- **Structured output**: Executive brief with citations and recommendations\n"
+                "- **Conversational follow-up**: Ask questions grounded in the data"
+            )
+
+        st.markdown("**Agent Flow**")
+        st.code(
+            "1. GATHER  →  Pull data from Google Sheets (4 tabs) + Docs + Slack in parallel\n"
+            "2. ANALYZE →  LLM cross-references all sources, identifies patterns & risks\n"
+            "3. SYNTHESIZE → Produces structured brief with metrics, risks, opportunities\n"
+            "4. RECOMMEND → Generates 3-5 prioritized CEO action items for today\n"
+            "5. INTERACT → CEO can ask follow-up questions grounded in the same data",
+            language=None,
+        )
+
+    st.divider()
+
 # --- Auto-generate brief on page load ---
+source_label = "Google Sheets, Docs & Slack..." if _slack_connected else "Google Sheets & Docs..."
 if "context" not in st.session_state:
-    with st.spinner("Pulling live data from Google Sheets & Docs..."):
+    with st.spinner(f"Pulling live data from {source_label}"):
         try:
             st.session_state["context"] = build_context()
         except Exception as e:
@@ -95,7 +190,7 @@ with chat_container:
             st.markdown(msg["content"])
 
 # Chat input — Streamlit pins this to the bottom of the viewport automatically
-if user_input := st.chat_input("Ask about revenue, products, hiring, customers..."):
+if user_input := st.chat_input("Ask about revenue, products, hiring, customers, Slack updates..."):
     st.session_state["chat_messages"].append({"role": "user", "content": user_input})
     with chat_container:
         with st.chat_message("user", avatar="🧑‍💼"):
