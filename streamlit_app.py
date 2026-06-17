@@ -39,6 +39,11 @@ st.markdown("""
         color: #f2f6f5 !important;
     }
 
+    /* Sidebar logo — invert dark green SVG to white */
+    section[data-testid="stSidebar"] img {
+        filter: brightness(0) invert(1) !important;
+    }
+
     /* Brand green buttons */
     .stButton > button {
         background-color: #013b30;
@@ -51,7 +56,7 @@ st.markdown("""
         color: white;
     }
 
-    /* Info boxes — AlgaeCal sage green */
+    /* Info boxes */
     div[data-testid="stAlert"] {
         border-radius: 8px;
     }
@@ -83,6 +88,82 @@ st.markdown("""
     hr {
         border-color: #e0e8e5;
     }
+
+    /* --- Daily Brief readability --- */
+    .brief-container {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 1rem;
+        line-height: 1.7;
+        color: #222222;
+    }
+    .brief-container h1, .brief-container h2, .brief-container h3,
+    .brief-container h4, .brief-container h5, .brief-container h6 {
+        color: #013b30;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .brief-container h2 { font-size: 1.4rem; }
+    .brief-container h3 { font-size: 1.2rem; }
+    .brief-container strong { color: #013b30; }
+    .brief-container ul, .brief-container ol {
+        padding-left: 1.5rem;
+        margin-bottom: 0.8rem;
+    }
+    .brief-container li {
+        margin-bottom: 0.4rem;
+        line-height: 1.6;
+    }
+    .brief-container code {
+        font-size: 0.95rem;
+        background: #f2f6f5;
+        padding: 0.1rem 0.4rem;
+        border-radius: 4px;
+    }
+    .brief-container p {
+        margin-bottom: 0.6rem;
+    }
+
+    /* --- Sticky chat bar at bottom --- */
+    .sticky-chat-header {
+        position: fixed;
+        bottom: 68px;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 0.5rem 2rem;
+        border-top: 2px solid #013b30;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .sticky-chat-header span.label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #013b30;
+    }
+    .sticky-chat-header span.sublabel {
+        font-size: 0.8rem;
+        color: #6a6b6e;
+    }
+
+    /* Push Streamlit's native chat_input bar styling */
+    .stChatInput {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        padding: 0.75rem 2rem !important;
+        background: white !important;
+        border-top: 1px solid #e0e8e5 !important;
+        z-index: 1000 !important;
+    }
+
+    /* Add padding at bottom of main content so it doesn't hide behind sticky bar */
+    .main .block-container {
+        padding-bottom: 140px !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -104,12 +185,12 @@ except Exception:
     pass
 
 # --- Header with Logo ---
-header_col1, header_col2 = st.columns([1, 4])
-with header_col1:
-    st.image(ALGAECAL_LOGO, width=180)
-with header_col2:
-    st.markdown(f"# CEO Daily Brief")
-    st.caption(f"AI Chief of Staff Agent · {date.today().strftime('%A, %B %d, %Y')}")
+st.image(ALGAECAL_LOGO, width=160)
+st.markdown(
+    f"<h1 style='margin-top: 0; color: #013b30;'>CEO Daily Brief</h1>"
+    f"<p style='color: #6a6b6e; margin-top: -0.8rem;'>AI Chief of Staff Agent · {date.today().strftime('%A, %B %d, %Y')}</p>",
+    unsafe_allow_html=True,
+)
 
 if _import_error:
     st.error(f"Agent failed to load: {_import_error}")
@@ -208,7 +289,6 @@ if show_architecture:
             unsafe_allow_html=True,
         )
 
-    # Technical details expander
     with st.expander("🔍 Technical Details", expanded=False):
         tech_col1, tech_col2 = st.columns(2)
         with tech_col1:
@@ -260,48 +340,51 @@ if "brief" not in st.session_state:
             st.error(f"⚠️ Could not generate brief right now. This is usually a temporary API issue — click **Refresh Brief** in the sidebar to try again.")
             st.stop()
 
-# Display brief
-st.markdown(st.session_state["brief"])
+# Display brief inside styled container
+st.markdown(f'<div class="brief-container">{st.session_state["brief"]}</div>', unsafe_allow_html=True)
 
 if show_raw:
     with st.expander("📋 Raw Data Context (sent to LLM)", expanded=False):
         st.markdown(st.session_state["context"])
 
-# --- Ask Your Algae Bud (sticky at bottom via Streamlit's native chat_input) ---
-st.divider()
-st.markdown("### 🌿 Ask Your Algae Bud")
-st.caption("Ask follow-up questions — answers come strictly from your connected data sources.")
-
-# Initialize chat history
+# --- Chat history (scrollable, above sticky bar) ---
 if "chat_messages" not in st.session_state:
     st.session_state["chat_messages"] = []
 
-# Display chat history in a scrollable container
-chat_container = st.container()
-with chat_container:
+if st.session_state["chat_messages"]:
+    st.divider()
     for msg in st.session_state["chat_messages"]:
-        with st.chat_message(msg["role"], avatar="🧑‍💼" if msg["role"] == "user" else "🌿"):
+        with st.chat_message(msg["role"], avatar="🧑‍💼" if msg["role"] == "user" else "🦴"):
             st.markdown(msg["content"])
 
-# Chat input — Streamlit pins this to the bottom of the viewport automatically
+# --- Sticky chat header ---
+st.markdown(
+    '<div class="sticky-chat-header">'
+    '<span style="font-size:1.3rem;">🦴</span>'
+    '<span class="label">Ask Your Algae Bud</span>'
+    '<span class="sublabel">— answers come strictly from your connected data sources</span>'
+    '</div>',
+    unsafe_allow_html=True,
+)
+
+# Chat input — Streamlit pins this to the bottom automatically
 if user_input := st.chat_input("Ask about revenue, products, hiring, customers, Slack updates..."):
     st.session_state["chat_messages"].append({"role": "user", "content": user_input})
-    with chat_container:
-        with st.chat_message("user", avatar="🧑‍💼"):
-            st.markdown(user_input)
+    with st.chat_message("user", avatar="🧑‍💼"):
+        st.markdown(user_input)
 
-        with st.chat_message("assistant", avatar="🌿"):
-            with st.spinner("Thinking..."):
-                try:
-                    response = chat_with_context(
-                        user_message=user_input,
-                        context=st.session_state["context"],
-                        chat_history=st.session_state["chat_messages"][:-1],
-                    )
-                    st.markdown(response)
-                    st.session_state["chat_messages"].append({"role": "assistant", "content": response})
-                except Exception as e:
-                    st.warning(
-                        "⚠️ Couldn't get a response right now — the AI service may be temporarily busy. "
-                        "Try again in a few seconds."
-                    )
+    with st.chat_message("assistant", avatar="🦴"):
+        with st.spinner("Thinking..."):
+            try:
+                response = chat_with_context(
+                    user_message=user_input,
+                    context=st.session_state["context"],
+                    chat_history=st.session_state["chat_messages"][:-1],
+                )
+                st.markdown(response)
+                st.session_state["chat_messages"].append({"role": "assistant", "content": response})
+            except Exception as e:
+                st.warning(
+                    "⚠️ Couldn't get a response right now — the AI service may be temporarily busy. "
+                    "Try again in a few seconds."
+                )
