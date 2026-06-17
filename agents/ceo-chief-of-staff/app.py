@@ -16,7 +16,75 @@ if _repo_root not in sys.path:
 if _agent_dir not in sys.path:
     sys.path.insert(0, _agent_dir)
 
-st.set_page_config(page_title="CEO Daily Brief — AlgaeCal", page_icon="📊", layout="wide")
+ALGAECAL_LOGO = "https://cdn.shopify.com/s/files/1/0911/6041/2476/files/AlgaeCal-default-no-copyright.svg"
+
+st.set_page_config(page_title="CEO Daily Brief — AlgaeCal", page_icon="🦴", layout="wide")
+
+# --- AlgaeCal Brand CSS ---
+st.markdown("""
+<style>
+    /* Header bar */
+    header[data-testid="stHeader"] {
+        background-color: #013b30;
+    }
+
+    /* Sidebar styling */
+    section[data-testid="stSidebar"] {
+        background-color: #013b30;
+    }
+    section[data-testid="stSidebar"] * {
+        color: #f2f6f5 !important;
+    }
+    section[data-testid="stSidebar"] .stCheckbox label span {
+        color: #f2f6f5 !important;
+    }
+
+    /* Brand green buttons */
+    .stButton > button {
+        background-color: #013b30;
+        color: white;
+        border: none;
+        border-radius: 8px;
+    }
+    .stButton > button:hover {
+        background-color: #025c4a;
+        color: white;
+    }
+
+    /* Info boxes — AlgaeCal sage green */
+    div[data-testid="stAlert"] {
+        border-radius: 8px;
+    }
+
+    /* Chat input styling */
+    .stChatInput > div {
+        border-color: #013b30;
+    }
+
+    /* Architecture cards */
+    .arch-card {
+        background: #f2f6f5;
+        border-left: 4px solid #013b30;
+        padding: 1.2rem;
+        border-radius: 8px;
+        height: 100%;
+    }
+    .arch-card h4 {
+        color: #013b30;
+        margin-top: 0;
+    }
+
+    /* Expander headers */
+    details summary {
+        color: #013b30 !important;
+    }
+
+    /* Dividers */
+    hr {
+        border-color: #e0e8e5;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # Import agent after path setup
 try:
@@ -35,8 +103,13 @@ try:
 except Exception:
     pass
 
-st.title("📊 CEO Daily Brief")
-st.caption(f"AlgaeCal AI Chief of Staff · {date.today().strftime('%A, %B %d, %Y')}")
+# --- Header with Logo ---
+header_col1, header_col2 = st.columns([1, 4])
+with header_col1:
+    st.image(ALGAECAL_LOGO, width=180)
+with header_col2:
+    st.markdown(f"# CEO Daily Brief")
+    st.caption(f"AI Chief of Staff Agent · {date.today().strftime('%A, %B %d, %Y')}")
 
 if _import_error:
     st.error(f"Agent failed to load: {_import_error}")
@@ -52,6 +125,8 @@ st.info(
 
 # Sidebar
 with st.sidebar:
+    st.image(ALGAECAL_LOGO, width=160)
+    st.markdown("---")
     st.header("Live Data Sources")
     st.success("Google Sheets — KPI Dashboard", icon="✅")
     st.success("Google Docs — CEO Weekly Update", icon="✅")
@@ -72,12 +147,19 @@ with st.sidebar:
         for key in ["context", "brief"]:
             st.session_state.pop(key, None)
         st.rerun()
+    st.divider()
+    st.markdown(
+        "<div style='text-align:center; font-size:0.75rem; opacity:0.7;'>"
+        "Built by Rajat Singh<br>AI Product Builder Portfolio"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
 st.divider()
 
 # --- Agent Architecture Section ---
 if show_architecture:
-    st.markdown("## 🏗️ Agent Architecture")
+    st.markdown("## Agent Architecture")
     st.markdown(
         "This is not a simple chatbot or wrapper around an LLM. "
         "It is an **autonomous AI agent** that orchestrates multiple data sources, "
@@ -86,32 +168,44 @@ if show_architecture:
 
     arch_cols = st.columns(4)
     with arch_cols[0]:
-        st.markdown("#### 🔗 Multi-Source Orchestration")
         st.markdown(
-            "Pulls live data from **6+ business systems** in parallel — "
+            '<div class="arch-card">'
+            "<h4>🔗 Multi-Source Orchestration</h4>"
+            "<p>Pulls live data from <strong>6+ business systems</strong> in parallel — "
             "Google Sheets (4 tabs), Google Docs, and Slack. "
-            "Production-ready for Salesforce, Jira, HubSpot via MCP connectors."
+            "Production-ready for Salesforce, Jira, HubSpot via MCP connectors.</p>"
+            "</div>",
+            unsafe_allow_html=True,
         )
     with arch_cols[1]:
-        st.markdown("#### 🧠 Reasoning Layer")
         st.markdown(
-            "Doesn't just summarize — **cross-references** revenue trends against "
+            '<div class="arch-card">'
+            "<h4>🧠 Reasoning Layer</h4>"
+            "<p>Doesn't just summarize — <strong>cross-references</strong> revenue trends against "
             "customer health, hiring gaps against engineering velocity, and Slack chatter "
-            "against strategic priorities to surface what actually matters."
+            "against strategic priorities to surface what actually matters.</p>"
+            "</div>",
+            unsafe_allow_html=True,
         )
     with arch_cols[2]:
-        st.markdown("#### 🔄 Agentic Loop")
         st.markdown(
-            "Executes a full **Gather → Analyze → Synthesize → Recommend** loop autonomously. "
+            '<div class="arch-card">'
+            "<h4>🔄 Agentic Loop</h4>"
+            "<p>Executes a full <strong>Gather → Analyze → Synthesize → Recommend</strong> loop autonomously. "
             "Each run pulls fresh data, identifies risks, and generates prioritized actions "
-            "without human prompting."
+            "without human prompting.</p>"
+            "</div>",
+            unsafe_allow_html=True,
         )
     with arch_cols[3]:
-        st.markdown("#### ⚙️ Production Architecture")
         st.markdown(
-            "**Model-agnostic** LLM provider (swap Gemini ↔ Claude in one line). "
+            '<div class="arch-card">'
+            "<h4>⚙️ Production Architecture</h4>"
+            "<p><strong>Model-agnostic</strong> LLM provider (swap Gemini ↔ Claude in one line). "
             "Concurrent data fetching via ThreadPoolExecutor. "
-            "Structured outputs with source attribution."
+            "Structured outputs with source attribution.</p>"
+            "</div>",
+            unsafe_allow_html=True,
         )
 
     # Technical details expander
