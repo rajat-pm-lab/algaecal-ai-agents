@@ -29,23 +29,28 @@ st.markdown("""
         background-color: #013b30;
     }
 
-    /* ===== Sidebar collapse/expand icon — ALWAYS white =====
-       Both the "X" close button inside sidebar AND the ">"
-       expand arrow in the header sit on #013b30 dark green,
-       so the icon must always be white. */
-    button[data-testid="baseButton-header"] svg,
-    button[data-testid="baseButton-headerNoPadding"] svg,
+    /* ===== ALL icons on dark green header/sidebar — ALWAYS white =====
+       This covers: sidebar toggle (expanded & collapsed), star, edit,
+       GitHub, deploy, overflow menu — every icon in the header bar
+       and sidebar sits on #013b30 dark green. */
+    header[data-testid="stHeader"] svg,
+    header[data-testid="stHeader"] button,
+    header[data-testid="stHeader"] a,
+    header[data-testid="stHeader"] button svg,
+    header[data-testid="stHeader"] a svg,
     [data-testid="stSidebar"] button svg,
     [data-testid="collapsedControl"] svg,
-    [data-testid="collapsedControl"] button svg,
-    header[data-testid="stHeader"] button svg {
+    [data-testid="collapsedControl"] button,
+    [data-testid="collapsedControl"] button svg {
         fill: white !important;
         stroke: white !important;
         color: white !important;
     }
-    [data-testid="collapsedControl"] button,
-    header[data-testid="stHeader"] button[kind="header"] {
+    /* Ensure header action buttons (star, fork, GitHub links) are white */
+    header[data-testid="stHeader"] *,
+    header[data-testid="stHeader"] [data-testid] svg {
         color: white !important;
+        fill: white !important;
     }
 
     /* Sidebar styling */
@@ -57,6 +62,25 @@ st.markdown("""
     }
     section[data-testid="stSidebar"] .stCheckbox label span {
         color: #f2f6f5 !important;
+    }
+
+    /* Tighten sidebar spacing — reduce vertical gaps */
+    section[data-testid="stSidebar"] .block-container {
+        padding-top: 1rem !important;
+    }
+    section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div {
+        margin-bottom: -0.3rem;
+    }
+    section[data-testid="stSidebar"] hr {
+        margin-top: 0.4rem !important;
+        margin-bottom: 0.4rem !important;
+    }
+    section[data-testid="stSidebar"] [data-testid="stAlert"] {
+        padding: 0.4rem 0.75rem !important;
+        margin-bottom: 0.2rem !important;
+    }
+    section[data-testid="stSidebar"] .stMarkdown p {
+        margin-bottom: 0.2rem !important;
     }
 
     /* Sidebar logo — invert dark green SVG to white */
