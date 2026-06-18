@@ -18,7 +18,7 @@ if _agent_dir not in sys.path:
 
 ALGAECAL_LOGO = "https://cdn.shopify.com/s/files/1/0911/6041/2476/files/AlgaeCal-default-no-copyright.svg"
 
-st.set_page_config(page_title="CEO Daily Brief — AlgaeCal", page_icon="🦴", layout="wide")
+st.set_page_config(page_title="AlgaeBud — AI Chief of Staff | AlgaeCal", page_icon="✦", layout="wide")
 
 # --- AlgaeCal Brand CSS ---
 st.markdown("""
@@ -37,6 +37,29 @@ st.markdown("""
     }
     section[data-testid="stSidebar"] .stCheckbox label span {
         color: #f2f6f5 !important;
+    }
+
+    /* Sidebar collapse/expand button — keep icon white on dark bg */
+    button[data-testid="stSidebarCollapseButton"] svg,
+    button[data-testid="stSidebarCollapsedControl"] svg,
+    section[data-testid="stSidebar"] button[kind="header"] svg,
+    [data-testid="stSidebar"] button svg,
+    [data-testid="collapsedControl"] svg {
+        fill: white !important;
+        stroke: white !important;
+        color: white !important;
+    }
+    button[data-testid="stSidebarCollapseButton"],
+    button[data-testid="stSidebarCollapsedControl"],
+    [data-testid="collapsedControl"] button {
+        color: white !important;
+    }
+    /* Collapsed state — icon on main area needs to be visible (dark) */
+    .main button[data-testid="stSidebarCollapsedControl"] svg,
+    [data-testid="collapsedControl"] svg {
+        fill: #013b30 !important;
+        stroke: #013b30 !important;
+        color: #013b30 !important;
     }
 
     /* Sidebar logo — invert dark green SVG to white */
@@ -124,6 +147,31 @@ st.markdown("""
         margin-bottom: 0.6rem;
     }
 
+    /* --- AlgaeBud AI icon --- */
+    .algaebud-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #013b30, #02735e);
+        flex-shrink: 0;
+    }
+    .algaebud-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+    .algaebud-icon-sm {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+    }
+    .algaebud-icon-sm svg {
+        width: 14px;
+        height: 14px;
+    }
+
     /* --- Sticky chat bar at bottom --- */
     .sticky-chat-header {
         position: fixed;
@@ -132,11 +180,19 @@ st.markdown("""
         right: 0;
         background: white;
         padding: 0.5rem 2rem;
+        padding-left: calc(2rem + var(--sidebar-width, 0px));
         border-top: 2px solid #013b30;
         z-index: 999;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.6rem;
+    }
+    /* Adjust for sidebar — Streamlit sets sidebar width via data attribute */
+    @media (min-width: 768px) {
+        section[data-testid="stSidebar"][aria-expanded="true"] ~ .main .sticky-chat-header,
+        .sticky-chat-header {
+            left: 0;
+        }
     }
     .sticky-chat-header span.label {
         font-size: 1rem;
@@ -164,7 +220,54 @@ st.markdown("""
     .main .block-container {
         padding-bottom: 140px !important;
     }
+
+    /* --- Builder attribution bar --- */
+    .builder-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 0;
+        font-size: 0.78rem;
+        color: #6a6b6e;
+        border-bottom: 1px solid #e0e8e5;
+        margin-bottom: 1.2rem;
+    }
+    .builder-bar strong {
+        color: #013b30;
+        font-weight: 600;
+    }
+    .builder-bar .sep {
+        color: #ccc;
+        margin: 0 0.15rem;
+    }
 </style>
+""", unsafe_allow_html=True)
+
+# --- JS to dynamically offset sticky bar for sidebar width ---
+st.markdown("""
+<script>
+(function() {
+    function adjustStickyBar() {
+        const sidebar = document.querySelector('section[data-testid="stSidebar"]');
+        const sticky = document.querySelector('.sticky-chat-header');
+        if (!sticky) return;
+        if (sidebar && sidebar.getAttribute('aria-expanded') === 'true') {
+            const w = sidebar.getBoundingClientRect().width;
+            sticky.style.left = w + 'px';
+        } else {
+            sticky.style.left = '0px';
+        }
+    }
+    // Run on load and observe changes
+    adjustStickyBar();
+    const observer = new MutationObserver(adjustStickyBar);
+    const sidebar = document.querySelector('section[data-testid="stSidebar"]');
+    if (sidebar) observer.observe(sidebar, { attributes: true });
+    window.addEventListener('resize', adjustStickyBar);
+    // Re-run periodically for Streamlit re-renders
+    setInterval(adjustStickyBar, 500);
+})();
+</script>
 """, unsafe_allow_html=True)
 
 # Import agent after path setup
@@ -184,11 +287,30 @@ try:
 except Exception:
     pass
 
+# --- Builder Attribution (top) ---
+st.markdown(
+    '<div class="builder-bar">'
+    '<strong>Built by Rajat Singh</strong>'
+    '<span class="sep">|</span> UBC MBA'
+    '<span class="sep">|</span> Senior Product Manager & AI-Native Product Builder'
+    '</div>',
+    unsafe_allow_html=True,
+)
+
 # --- Header with Logo ---
 st.image(ALGAECAL_LOGO, width=160)
 st.markdown(
-    f"<h1 style='margin-top: 0; color: #013b30;'>CEO Daily Brief</h1>"
-    f"<p style='color: #6a6b6e; margin-top: -0.8rem;'>AI Chief of Staff Agent · {date.today().strftime('%A, %B %d, %Y')}</p>",
+    '<div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.5rem;">'
+    '<div class="algaebud-icon" style="width:40px;height:40px;border-radius:10px;">'
+    '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    '<path d="M12 2L14.09 8.26L20 9.27L15.55 13.97L16.91 20L12 16.9L7.09 20L8.45 13.97L4 9.27L9.91 8.26L12 2Z" fill="white"/>'
+    '</svg>'
+    '</div>'
+    '<div>'
+    f'<h1 style="margin:0; color:#013b30; font-size:1.8rem; line-height:1.2;">AlgaeBud</h1>'
+    f'<p style="color:#6a6b6e; margin:0; font-size:0.95rem;">AI Chief of Staff Agent &middot; {date.today().strftime("%A, %B %d, %Y")}</p>'
+    '</div>'
+    '</div>',
     unsafe_allow_html=True,
 )
 
@@ -208,7 +330,31 @@ st.info(
 with st.sidebar:
     st.image(ALGAECAL_LOGO, width=160)
     st.markdown("---")
-    st.header("Live Data Sources")
+
+    # Refresh Brief — top of sidebar so it's always visible
+    if st.button("Refresh Brief", use_container_width=True):
+        for key in ["context", "brief"]:
+            st.session_state.pop(key, None)
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown(
+        "<p style='font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; "
+        "opacity:0.6; margin-bottom:0.5rem;'>Agent Configuration</p>",
+        unsafe_allow_html=True,
+    )
+    st.markdown("**Agent:** CEO Chief of Staff")
+    st.markdown("**LLM:** Model-agnostic (Gemini / Claude)")
+
+    show_raw = st.checkbox("Show raw data context", value=False)
+    show_architecture = st.checkbox("Show agent architecture", value=False)
+
+    st.markdown("---")
+    st.markdown(
+        "<p style='font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; "
+        "opacity:0.6; margin-bottom:0.5rem;'>Live Data Sources</p>",
+        unsafe_allow_html=True,
+    )
     st.success("Google Sheets — KPI Dashboard", icon="✅")
     st.success("Google Docs — CEO Weekly Update", icon="✅")
     if _slack_connected:
@@ -217,24 +363,6 @@ with st.sidebar:
         st.info("Slack — Not configured", icon="⏳")
     st.info("HubSpot CRM — Coming Soon", icon="⏳")
     st.info("Notion — Coming Soon", icon="⏳")
-    st.divider()
-    show_raw = st.checkbox("Show raw data context", value=False)
-    show_architecture = st.checkbox("Show agent architecture", value=False)
-    st.divider()
-    st.markdown("**Agent:** CEO Chief of Staff")
-    st.markdown("**LLM:** Model-agnostic (Gemini / Claude)")
-    st.divider()
-    if st.button("🔄 Refresh Brief", use_container_width=True):
-        for key in ["context", "brief"]:
-            st.session_state.pop(key, None)
-        st.rerun()
-    st.divider()
-    st.markdown(
-        "<div style='text-align:center; font-size:0.75rem; opacity:0.7;'>"
-        "Built by Rajat Singh<br>AI Product Builder Portfolio"
-        "</div>",
-        unsafe_allow_html=True,
-    )
 
 st.divider()
 
@@ -337,14 +465,14 @@ if "brief" not in st.session_state:
         try:
             st.session_state["brief"] = generate_brief(context=st.session_state["context"])
         except Exception as e:
-            st.error(f"⚠️ Could not generate brief right now. This is usually a temporary API issue — click **Refresh Brief** in the sidebar to try again.")
+            st.error(f"Could not generate brief right now. This is usually a temporary API issue — click **Refresh Brief** in the sidebar to try again.")
             st.stop()
 
 # Display brief inside styled container
 st.markdown(f'<div class="brief-container">{st.session_state["brief"]}</div>', unsafe_allow_html=True)
 
 if show_raw:
-    with st.expander("📋 Raw Data Context (sent to LLM)", expanded=False):
+    with st.expander("Raw Data Context (sent to LLM)", expanded=False):
         st.markdown(st.session_state["context"])
 
 # --- Chat history (scrollable, above sticky bar) ---
@@ -354,15 +482,19 @@ if "chat_messages" not in st.session_state:
 if st.session_state["chat_messages"]:
     st.divider()
     for msg in st.session_state["chat_messages"]:
-        with st.chat_message(msg["role"], avatar="🧑‍💼" if msg["role"] == "user" else "🦴"):
+        with st.chat_message(msg["role"], avatar="🧑‍💼" if msg["role"] == "user" else "✦"):
             st.markdown(msg["content"])
 
 # --- Sticky chat header ---
 st.markdown(
     '<div class="sticky-chat-header">'
-    '<span style="font-size:1.3rem;">🦴</span>'
-    '<span class="label">Ask Your Algae Bud</span>'
-    '<span class="sublabel">— answers come strictly from your connected data sources</span>'
+    '<div class="algaebud-icon algaebud-icon-sm">'
+    '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    '<path d="M12 2L14.09 8.26L20 9.27L15.55 13.97L16.91 20L12 16.9L7.09 20L8.45 13.97L4 9.27L9.91 8.26L12 2Z" fill="white"/>'
+    '</svg>'
+    '</div>'
+    '<span class="label">Ask AlgaeBud</span>'
+    '<span class="sublabel">Answers grounded in your connected data sources</span>'
     '</div>',
     unsafe_allow_html=True,
 )
@@ -373,7 +505,7 @@ if user_input := st.chat_input("Ask about revenue, products, hiring, customers, 
     with st.chat_message("user", avatar="🧑‍💼"):
         st.markdown(user_input)
 
-    with st.chat_message("assistant", avatar="🦴"):
+    with st.chat_message("assistant", avatar="✦"):
         with st.spinner("Thinking..."):
             try:
                 response = chat_with_context(
@@ -385,6 +517,6 @@ if user_input := st.chat_input("Ask about revenue, products, hiring, customers, 
                 st.session_state["chat_messages"].append({"role": "assistant", "content": response})
             except Exception as e:
                 st.warning(
-                    "⚠️ Couldn't get a response right now — the AI service may be temporarily busy. "
+                    "Couldn't get a response right now — the AI service may be temporarily busy. "
                     "Try again in a few seconds."
                 )
