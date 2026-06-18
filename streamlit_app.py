@@ -5,6 +5,7 @@ Streamlit auto-detects this file in the repo root.
 
 import sys
 import os
+import re
 import streamlit as st
 from datetime import date
 
@@ -28,6 +29,25 @@ st.markdown("""
         background-color: #013b30;
     }
 
+    /* ===== Sidebar collapse/expand icon — ALWAYS white =====
+       Both the "X" close button inside sidebar AND the ">"
+       expand arrow in the header sit on #013b30 dark green,
+       so the icon must always be white. */
+    button[data-testid="baseButton-header"] svg,
+    button[data-testid="baseButton-headerNoPadding"] svg,
+    [data-testid="stSidebar"] button svg,
+    [data-testid="collapsedControl"] svg,
+    [data-testid="collapsedControl"] button svg,
+    header[data-testid="stHeader"] button svg {
+        fill: white !important;
+        stroke: white !important;
+        color: white !important;
+    }
+    [data-testid="collapsedControl"] button,
+    header[data-testid="stHeader"] button[kind="header"] {
+        color: white !important;
+    }
+
     /* Sidebar styling */
     section[data-testid="stSidebar"] {
         background-color: #013b30;
@@ -37,29 +57,6 @@ st.markdown("""
     }
     section[data-testid="stSidebar"] .stCheckbox label span {
         color: #f2f6f5 !important;
-    }
-
-    /* Sidebar collapse/expand button — keep icon white on dark bg */
-    button[data-testid="stSidebarCollapseButton"] svg,
-    button[data-testid="stSidebarCollapsedControl"] svg,
-    section[data-testid="stSidebar"] button[kind="header"] svg,
-    [data-testid="stSidebar"] button svg,
-    [data-testid="collapsedControl"] svg {
-        fill: white !important;
-        stroke: white !important;
-        color: white !important;
-    }
-    button[data-testid="stSidebarCollapseButton"],
-    button[data-testid="stSidebarCollapsedControl"],
-    [data-testid="collapsedControl"] button {
-        color: white !important;
-    }
-    /* Collapsed state — icon on main area needs to be visible (dark) */
-    .main button[data-testid="stSidebarCollapsedControl"] svg,
-    [data-testid="collapsedControl"] svg {
-        fill: #013b30 !important;
-        stroke: #013b30 !important;
-        color: #013b30 !important;
     }
 
     /* Sidebar logo — invert dark green SVG to white */
@@ -172,53 +169,28 @@ st.markdown("""
         height: 14px;
     }
 
-    /* --- Sticky chat bar at bottom --- */
-    .sticky-chat-header {
-        position: fixed;
-        bottom: 68px;
-        left: 0;
-        right: 0;
-        background: white;
-        padding: 0.5rem 2rem;
-        padding-left: calc(2rem + var(--sidebar-width, 0px));
-        border-top: 2px solid #013b30;
-        z-index: 999;
+    /* --- Ask AlgaeBud inline label (NOT fixed/sticky) --- */
+    .algaebud-chat-label {
         display: flex;
         align-items: center;
         gap: 0.6rem;
+        padding: 0.6rem 0;
+        margin-top: 1rem;
+        border-top: 2px solid #013b30;
     }
-    /* Adjust for sidebar — Streamlit sets sidebar width via data attribute */
-    @media (min-width: 768px) {
-        section[data-testid="stSidebar"][aria-expanded="true"] ~ .main .sticky-chat-header,
-        .sticky-chat-header {
-            left: 0;
-        }
-    }
-    .sticky-chat-header span.label {
+    .algaebud-chat-label .label {
         font-size: 1rem;
         font-weight: 600;
         color: #013b30;
     }
-    .sticky-chat-header span.sublabel {
+    .algaebud-chat-label .sublabel {
         font-size: 0.8rem;
         color: #6a6b6e;
     }
 
-    /* Push Streamlit's native chat_input bar styling */
-    .stChatInput {
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        padding: 0.75rem 2rem !important;
-        background: white !important;
-        border-top: 1px solid #e0e8e5 !important;
-        z-index: 1000 !important;
-    }
-
-    /* Add padding at bottom of main content so it doesn't hide behind sticky bar */
+    /* Add padding at bottom of main content so it doesn't hide behind chat input */
     .main .block-container {
-        padding-bottom: 140px !important;
+        padding-bottom: 100px !important;
     }
 
     /* --- Builder attribution bar --- */
@@ -241,33 +213,6 @@ st.markdown("""
         margin: 0 0.15rem;
     }
 </style>
-""", unsafe_allow_html=True)
-
-# --- JS to dynamically offset sticky bar for sidebar width ---
-st.markdown("""
-<script>
-(function() {
-    function adjustStickyBar() {
-        const sidebar = document.querySelector('section[data-testid="stSidebar"]');
-        const sticky = document.querySelector('.sticky-chat-header');
-        if (!sticky) return;
-        if (sidebar && sidebar.getAttribute('aria-expanded') === 'true') {
-            const w = sidebar.getBoundingClientRect().width;
-            sticky.style.left = w + 'px';
-        } else {
-            sticky.style.left = '0px';
-        }
-    }
-    // Run on load and observe changes
-    adjustStickyBar();
-    const observer = new MutationObserver(adjustStickyBar);
-    const sidebar = document.querySelector('section[data-testid="stSidebar"]');
-    if (sidebar) observer.observe(sidebar, { attributes: true });
-    window.addEventListener('resize', adjustStickyBar);
-    // Re-run periodically for Streamlit re-renders
-    setInterval(adjustStickyBar, 500);
-})();
-</script>
 """, unsafe_allow_html=True)
 
 # Import agent after path setup
@@ -468,8 +413,51 @@ if "brief" not in st.session_state:
             st.error(f"⚠️ Could not generate brief right now. This is usually a temporary API issue — click **Refresh Brief** in the sidebar to try again.")
             st.stop()
 
-# Display brief inside styled container
-st.markdown(f'<div class="brief-container">{st.session_state["brief"]}</div>', unsafe_allow_html=True)
+def _md_to_html(text: str) -> str:
+    """Convert markdown bold/italic/headers to HTML so brief renders
+    correctly inside an HTML container. Handles the common patterns
+    the LLM produces without needing an external library."""
+    # Headers: ### Title -> <h3>Title</h3>
+    text = re.sub(r'^######\s+(.+)$', r'<h6>\1</h6>', text, flags=re.MULTILINE)
+    text = re.sub(r'^#####\s+(.+)$', r'<h5>\1</h5>', text, flags=re.MULTILINE)
+    text = re.sub(r'^####\s+(.+)$', r'<h4>\1</h4>', text, flags=re.MULTILINE)
+    text = re.sub(r'^###\s+(.+)$', r'<h3>\1</h3>', text, flags=re.MULTILINE)
+    text = re.sub(r'^##\s+(.+)$', r'<h2>\1</h2>', text, flags=re.MULTILINE)
+    text = re.sub(r'^#\s+(.+)$', r'<h1>\1</h1>', text, flags=re.MULTILINE)
+    # Bold: **text** -> <strong>text</strong>
+    text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+    # Italic: *text* -> <em>text</em>
+    text = re.sub(r'\*(.+?)\*', r'<em>\1</em>', text)
+    # Bullet lists: - item -> <li>item</li> wrapped in <ul>
+    lines = text.split('\n')
+    result = []
+    in_list = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith('- ') or stripped.startswith('• '):
+            if not in_list:
+                result.append('<ul>')
+                in_list = True
+            result.append(f'<li>{stripped[2:]}</li>')
+        else:
+            if in_list:
+                result.append('</ul>')
+                in_list = False
+            if stripped == '':
+                result.append('<br>')
+            else:
+                # Wrap plain text lines in <p> if not already a tag
+                if not stripped.startswith('<'):
+                    result.append(f'<p>{stripped}</p>')
+                else:
+                    result.append(stripped)
+    if in_list:
+        result.append('</ul>')
+    return '\n'.join(result)
+
+# Display brief inside styled container — convert MD to HTML first
+brief_html = _md_to_html(st.session_state["brief"])
+st.markdown(f'<div class="brief-container">{brief_html}</div>', unsafe_allow_html=True)
 
 if show_raw:
     with st.expander("📋 Raw Data Context (sent to LLM)", expanded=False):
@@ -485,9 +473,9 @@ if st.session_state["chat_messages"]:
         with st.chat_message(msg["role"], avatar="🧑‍💼" if msg["role"] == "user" else "✦"):
             st.markdown(msg["content"])
 
-# --- Sticky chat header ---
+# --- Ask AlgaeBud label (inline, not fixed — respects sidebar naturally) ---
 st.markdown(
-    '<div class="sticky-chat-header">'
+    '<div class="algaebud-chat-label">'
     '<div class="algaebud-icon algaebud-icon-sm">'
     '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">'
     '<path d="M12 2L14.09 8.26L20 9.27L15.55 13.97L16.91 20L12 16.9L7.09 20L8.45 13.97L4 9.27L9.91 8.26L12 2Z" fill="white"/>'
