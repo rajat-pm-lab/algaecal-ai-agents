@@ -259,9 +259,10 @@ except Exception:
 # --- Builder Attribution (top) ---
 st.markdown(
     '<div class="builder-bar">'
-    '<strong>Built by Rajat Singh</strong>'
+    '<strong>Built by <a href="https://www.linkedin.com/in/rajat95/" target="_blank" style="color:#013b30 !important; text-decoration:none;">Rajat Singh</a></strong>'
     '<span class="sep">|</span> UBC MBA'
     '<span class="sep">|</span> Senior Product Manager & AI-Native Product Builder'
+    '<span class="sep">|</span> <a href="https://www.linkedin.com/in/rajat95/" target="_blank" style="color:#013b30 !important; text-decoration:none; font-weight:600;">LinkedIn</a>'
     '</div>',
     unsafe_allow_html=True,
 )
